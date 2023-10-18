@@ -9,6 +9,8 @@ public partial class Task
 {
     public long Id { get; set; }
 
+    [Required]
+    [StringLength(40, MinimumLength = 5)]
     public string Title { get; set; } = null!;
 
     public string? Description { get; set; }

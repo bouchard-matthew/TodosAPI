@@ -83,10 +83,8 @@ namespace ToDosAPI.Controllers
             if (_context.Tasks == null)
             {
                 return Problem("Entity set 'TodosContext.Tasks'  is null.");
-            } else if (task.Title == "")
-            {
-                return Problem("You did not provide me the title pleis add title");
-            }
+            } 
+
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
 
