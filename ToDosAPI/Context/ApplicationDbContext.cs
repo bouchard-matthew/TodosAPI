@@ -6,20 +6,10 @@ namespace ToDosAPI.Context;
 
 public partial class ApplicationDbContext : DbContext
 {
-
-    private readonly string? _connectionString; 
-    
-    public ApplicationDbContext(string connectionString)
-    {
-        _connectionString = connectionString;
-    }
-
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseNpgsql(_connectionString);
     public virtual DbSet<Task> Tasks { get; set; }
 
     public virtual DbSet<User> Users { get; set; }

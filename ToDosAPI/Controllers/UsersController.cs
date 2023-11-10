@@ -15,10 +15,13 @@ namespace ToDosAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(ApplicationDbContext context)
+
+        public UsersController(ApplicationDbContext context, ILogger<UsersController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/Users
@@ -86,34 +89,31 @@ namespace ToDosAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
-            if (_context.Users == null)
+            if (user == null)
             {
-              return Problem("Entity set 'TodosContext.Users'  is null.");
-            }
-            var query = _context.Users.Any(e => e.Username == user.Username);
-
-            Console.WriteLine(query);
-            
-            if (!query)
-            {
-                try
-                {
-                    _context.Users.Add(user);
-                    await _context.SaveChangesAsync();
-
-                }
-                catch (DbUpdateException error)
-                {
-                    Console.WriteLine(error.Message.ToString());
-                    return StatusCode(500, "Log Herre pleis");
-                }
-            } 
-            else
-            {
-                return Problem("Username already exists");
+                return BadRequest("Invalid user data.");
             }
 
-            return CreatedAtAction("GetUser", new { id = user.Id }, user);
+            try
+            {
+                var usernameExists = await _context.Users.AnyAsync(e => e.Username == user.Username);
+
+                if (usernameExists)
+                {
+                    _logger.LogError("Username already exists");
+                    return BadRequest("Username already exists.");
+                }
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction("GetUser", new { id = user.Id }, user);
+            }
+            catch (DbUpdateException error)
+            {
+                _logger.LogError(error, "Error while updating the database.");
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
 
         // DELETE: api/Users/5
